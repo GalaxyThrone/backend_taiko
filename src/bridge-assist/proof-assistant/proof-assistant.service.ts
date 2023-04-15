@@ -30,8 +30,8 @@ export class ProofAssistantService {
   private contractAddressSepolia = "0x11013a48Ad87a528D23CdA25D2C34D7dbDA6b46b"; // SignalService Sepolia
   private contractAddressTaiko = "0x0000777700000000000000000000000000000007"; // SignalService Taiko
 
-  private contractAddressBridgeSepolia = "0x2474102e3B7702Bc623a7aC45Fee5957CF7496bB";
-  private contractAddressBridgeTaiko = "0xfF3DB8fA0d28E0DF5723bBd641D58cE7513F51b5"; //@notice currently not used. Important for bridging back.
+  private contractAddressBridgeSepolia = "0x0363AA31FD5b7B273E3698F12c83fbDA92e74e85";
+  private contractAddressBridgeTaiko = "0x942021fBb49d74Ddd0bc21c75A29A001dEE5281D"; //@notice currently not used. Important for bridging back.
 
 
   private contractABI = [
