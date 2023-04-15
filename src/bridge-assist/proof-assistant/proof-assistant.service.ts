@@ -863,7 +863,7 @@ export class ProofAssistantService {
 
     console.log(bridgeRequest)
     
-    let signalSenderAddress = await bridgeContract.bridgeRequestInitiatorUser(bridgeRequest); // "0x13120DFedaa8Ec13CD363dccF764FBe41e77a50D"
+    let signalSenderAddress = this.contractAddressBridgeSepolia; // "0x13120DFedaa8Ec13CD363dccF764FBe41e77a50D"
     
 
     //0x13120DFedaa8Ec13CD363dccF764FBe41e77a50D
@@ -878,7 +878,7 @@ export class ProofAssistantService {
     //0x71ca46722f31889ce64f10afa0e54029d9066641a744ea32adbae4545c603073
     //0x67d67034cf7e83c76825b836320f85883356ed004d1f34415274fe8e86c9feea
     console.log("So far...2")
-    const signalToVerify =  await bridgeContract.sentPayload(bridgeRequest)//await bridgeContract.sentPayload(bridgeRequest); // @TODO get from contract;
+    let signalToVerify =  await bridgeContract.sentPayload(bridgeRequest)//await bridgeContract.sentPayload(bridgeRequest); // @TODO get from contract;
 
       console.log(signalToVerify)
    
@@ -990,7 +990,7 @@ export class ProofAssistantService {
 
     console.log("General Kenobi!")
 
-    /*
+    
     console.log("--sepoliaChainId--")
     console.log(this.sepoliaChainId);
     console.log("--signalSenderAddress--")
@@ -1001,7 +1001,7 @@ export class ProofAssistantService {
     console.log(signalProof);
     console.log("----")
 
-      */
+      
 
      
     const tx = await contractSignalService
