@@ -30,8 +30,8 @@ export class ProofAssistantService {
   private contractAddressSepolia = "0x11013a48Ad87a528D23CdA25D2C34D7dbDA6b46b"; // SignalService Sepolia
   private contractAddressTaiko = "0x0000777700000000000000000000000000000007"; // SignalService Taiko
 
-  private contractAddressBridgeSepolia = "0xc9f33F33037F1010066349232F647f8c6AB24b5c";
-  private contractAddressBridgeTaiko = "0x048A645062893f9152d8165829710DBD9d131a28"; //@notice currently not used. Important for bridging back.
+  private contractAddressBridgeSepolia = "0x94EcdBe6491670e8a7f92Aa56408cd9336cBc253";
+  private contractAddressBridgeTaiko = "0x8fBC04d9C0871814b6141ae2d9603a8486337E6B"; //@notice currently not used. Important for bridging back.
 
 
   private contractABI = [
@@ -416,25 +416,6 @@ export class ProofAssistantService {
           "type": "uint256"
         }
       ],
-      "name": "blockNumber",
-      "outputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
-      "stateMutability": "view",
-      "type": "function"
-    },
-    {
-      "inputs": [
-        {
-          "internalType": "uint256",
-          "name": "",
-          "type": "uint256"
-        }
-      ],
       "name": "bridgeRequestInitiatorSender",
       "outputs": [
         {
@@ -692,6 +673,25 @@ export class ProofAssistantService {
       "type": "function"
     },
     {
+      "inputs": [
+        {
+          "internalType": "uint256",
+          "name": "",
+          "type": "uint256"
+        }
+      ],
+      "name": "sentPayload",
+      "outputs": [
+        {
+          "internalType": "bytes32",
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+    },
+    {
       "inputs": [],
       "name": "sepoliaBridgeContract",
       "outputs": [
@@ -808,7 +808,6 @@ export class ProofAssistantService {
       "type": "function"
     }
   ]
-
   private taikoBridgeABIHEaders = [
     {
       "constant": true,
@@ -863,7 +862,12 @@ export class ProofAssistantService {
     console.log("WE STARTIN")
 
     console.log(bridgeRequest)
-    const signalSenderAddress = await bridgeContract.bridgeRequestInitiatorUser(bridgeRequest);
+    
+    let signalSenderAddress = await bridgeContract.bridgeRequestInitiatorUser(bridgeRequest); // "0x13120DFedaa8Ec13CD363dccF764FBe41e77a50D"
+    
+
+    //0x13120DFedaa8Ec13CD363dccF764FBe41e77a50D
+    
     console.log(signalSenderAddress)
     console.log("So far...1")
 
@@ -871,16 +875,13 @@ export class ProofAssistantService {
       
 
 
-  
-    
+    //0x71ca46722f31889ce64f10afa0e54029d9066641a744ea32adbae4545c603073
+    //0x67d67034cf7e83c76825b836320f85883356ed004d1f34415274fe8e86c9feea
     console.log("So far...2")
-    const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
+    const signalToVerify =  await bridgeContract.sentPayload(bridgeRequest)//await bridgeContract.sentPayload(bridgeRequest); // @TODO get from contract;
 
       console.log(signalToVerify)
-    if(signalToVerify ==  "0x0000000000000000000000000000000000000000000000000000000000000000"){
-      throw new Error("Signal wasnt sent!")
-
-   }
+   
 
 
 
@@ -989,6 +990,8 @@ export class ProofAssistantService {
 
     console.log("General Kenobi!")
 
+
+     
     const tx = await contractSignalService
       .connect(this.providerTaiko)
       .isSignalReceived(this.sepoliaChainId, signalSenderAddress, signalToVerify, signalProof);
@@ -1025,14 +1028,15 @@ export class ProofAssistantService {
   
 
       
-    const signalSenderAddress = await bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
+    const signalSenderAddressUser = await bridgeContract.bridgeRequestInitiatorUser(bridgeRequest);
   
- 
+    const signalSenderAddressContr = await bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
    
 
  
-    const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
+    let signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
 
+    
 
     
     console.log(signalToVerify)
