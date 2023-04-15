@@ -4,6 +4,7 @@ import { keccak256 } from 'ethereumjs-util';
 import { MerkleTree } from 'merkletreejs';
 import * as abi from 'ethereumjs-abi';
 import { ConfigService } from '@nestjs/config';
+import { throwError } from 'rxjs';
 
 @Injectable()
 export class ProofAssistantService {
@@ -875,6 +876,14 @@ export class ProofAssistantService {
     console.log("So far...2")
     const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
 
+      console.log(signalToVerify)
+    if(signalToVerify ==  "0x0000000000000000000000000000000000000000000000000000000000000000"){
+      throw new Error("Signal wasnt sent!")
+
+   }
+
+
+
 
     console.log("So far...3")
     //console.log(signalToVerify)
@@ -898,7 +907,6 @@ export class ProofAssistantService {
       latestSyncedHeaderHash,
       false,
     ]);
-
 
 
 
@@ -1020,7 +1028,7 @@ export class ProofAssistantService {
     const signalSenderAddress = await bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
   
  
-    const blockNumber = await bridgeContract.blockNumber(bridgeRequest);
+   
 
  
     const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
