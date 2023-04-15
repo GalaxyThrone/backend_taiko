@@ -3,6 +3,8 @@ import { ethers } from 'ethers';
 import { keccak256 } from 'ethereumjs-util';
 import { MerkleTree } from 'merkletreejs';
 import * as abi from 'ethereumjs-abi';
+import { ConfigService } from '@nestjs/config';
+
 
 @Injectable()
 export class ProofAssistantService {
@@ -14,21 +16,30 @@ export class ProofAssistantService {
     "https://l2rpc.hackathon.taiko.xyz"
   );
 
-  private privateKey = "587551309017b901fc869c3197ad584c150c379d1e4eb1ae4678400311f39bc2";
-  private wallet = new ethers.Wallet(this.privateKey, this.provider);
+
+
+  private privateKey: string;
+  private wallet: ethers.Wallet;
+
+  constructor(private configService: ConfigService) {
+    this.privateKey = this.configService.get<string>('PRIVATE_KEY');
+    this.wallet = new ethers.Wallet(this.privateKey, this.provider);
+  }
+
+
   private contractAddressSepolia = "0x11013a48Ad87a528D23CdA25D2C34D7dbDA6b46b"; // SignalService Sepolia
   private contractAddressTaiko = "0x0000777700000000000000000000000000000007"; // SignalService Taiko
 
-  private contractAddressBridgeSepolia ="0x9bF56347Cf15e37A0b85Dc269b65D2b10399be96";
-  private contractAddressBridgeTaiko ="0x148cff8FD012eefB61128d3fFa23CFA744E63163";
-  
+  private contractAddressBridgeSepolia = "0x9bF56347Cf15e37A0b85Dc269b65D2b10399be96";
+  private contractAddressBridgeTaiko = "0x148cff8FD012eefB61128d3fFa23CFA744E63163";
+
 
   private contractABI = require('./signalService.json');
   private contractNFTABI = require('./nftContract.json');
 
   private bridgeContractABI = require('./bridgeContract.json');
 
-  
+
 
   private contract = new ethers.Contract(
     this.contractAddressTaiko,
@@ -50,14 +61,14 @@ export class ProofAssistantService {
     this.wallet
   );
 
-  
 
 
 
-  async claimSignal(bridgeRequest: number){
+
+  async claimSignal(bridgeRequest: number) {
     const signalSenderAddress = await this.bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
     const blockNumber = await this.bridgeContract.blockNumber(bridgeRequest);
-    const signalToVerify =await this.bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
+    const signalToVerify = await this.bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
 
     const proof = await this.provider.send("eth_getProof", [
       this.contractAddressSepolia,
@@ -86,7 +97,7 @@ export class ProofAssistantService {
     const block = await this.provider.send("eth_getBlockByNumber", [
       blockNumber,
       false,
-   
+
     ]);
 
     const blockHeader = {
@@ -114,28 +125,27 @@ export class ProofAssistantService {
         : 0,
       withdrawalsRoot: block.withdrawalsRoot,
     };
-    
+
     console.log(this.wallet);
     console.log("---------------encoded account & storage proof---------------");
     console.log(encodedProof);
-    
+
     let signalProof = ethers.utils.defaultAbiCoder.encode(
       [
         "tuple(tuple(bytes32 parentHash, bytes32 ommersHash, address beneficiary, bytes32 stateRoot, bytes32 transactionsRoot, bytes32 receiptsRoot, bytes32[8] logsBloom, uint256 difficulty, uint128 height, uint64 gasLimit, uint64 gasUsed, uint64 timestamp, bytes extraData, bytes32 mixHash, uint64 nonce, uint256 baseFeePerGas, bytes32 withdrawalsRoot) header, bytes proof)",
       ],
       [{ header: blockHeader, proof: encodedProof }]
     );
-    
+
     const tx = await this.contract
       .connect(this.providerTaiko)
-      .isSignalReceived(this.sepoliaChainId, signalSenderAddress,ethers.utils.formatBytes32String(signalToVerify), signalProof);
-    
+      .isSignalReceived(this.sepoliaChainId, signalSenderAddress, ethers.utils.formatBytes32String(signalToVerify), signalProof);
+
     console.log(`Signal sent status: ${tx}`);
   }
 
   async executeClaimSignal() {
-  await this.claimSignal(0);
+    await this.claimSignal(0);
   }
-  }
-  
-      
+}
+
