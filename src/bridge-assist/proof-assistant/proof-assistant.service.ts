@@ -826,24 +826,31 @@ export class ProofAssistantService {
   async claimSignal(bridgeRequest: number) {
 
 
-    const contract = new ethers.Contract(
-      this.contractAddressTaiko,
+    const contractSignalService = new ethers.Contract(
+      this.contractAddressSepolia,
       this.contractABI,
       this.wallet
     );
     
     const bridgeContract = new ethers.Contract(
-      this.contractAddressBridgeTaiko,
+      this.contractAddressBridgeSepolia,
       this.bridgeContractABI,
       this.wallet
     );
   
 
-    
+    console.log("WE STARTIN")
 
+      console.log(bridgeRequest)
     const signalSenderAddress = await bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
+
+    console.log("So far...")
     const blockNumber = await bridgeContract.blockNumber(bridgeRequest);
+
+    console.log("So far...")
     const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
+
+    console.log("so far so good!")
 
     const proof = await this.provider.send("eth_getProof", [
       this.contractAddressSepolia,
@@ -912,7 +919,7 @@ export class ProofAssistantService {
       [{ header: blockHeader, proof: encodedProof }]
     );
 
-    const tx = await contract
+    const tx = await contractSignalService
       .connect(this.providerTaiko)
       .isSignalReceived(this.sepoliaChainId, signalSenderAddress, ethers.utils.formatBytes32String(signalToVerify), signalProof);
 
