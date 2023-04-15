@@ -30,7 +30,7 @@ export class ProofAssistantService {
   private contractAddressTaiko = "0x0000777700000000000000000000000000000007"; // SignalService Taiko
 
   private contractAddressBridgeSepolia = "0x6190267B10F21a45514C6e92D7F1d92DB761c081";
-  private contractAddressBridgeTaiko = "0x056D55aF3eA69898cbA5000A3085d730eCfC0AaB";
+  private contractAddressBridgeTaiko = "0x056D55aF3eA69898cbA5000A3085d730eCfC0AaB"; //@notice currently not used. Important for bridging back.
 
 
   private contractABI = [
@@ -304,6 +304,8 @@ export class ProofAssistantService {
 }
 ]
   
+
+
 
   private bridgeContractABI = [
     {
@@ -806,7 +808,22 @@ export class ProofAssistantService {
     }
   ]
 
-
+  private taikoBridgeABIHEaders = [
+    {
+      "constant": true,
+      "inputs": [],
+      "name": "getLatestSyncedHeader",
+      "outputs": [
+        {
+          "name": "",
+          "type": "bytes32"
+        }
+      ],
+      "payable": false,
+      "stateMutability": "view",
+      "type": "function"
+    }
+  ]
 
  
   private sepoliaChainId = 11155111; // Sepolia Id
@@ -827,29 +844,28 @@ export class ProofAssistantService {
     const contractSignalService = new ethers.Contract(
       this.contractAddressTaiko,
       this.contractABI,
-      this.wallet
-    );
+      this.wallet).connect(this.provider)
     
     const bridgeContract = new ethers.Contract(
       this.contractAddressBridgeSepolia,
       this.bridgeContractABI,
       this.wallet
-    );
+    ).connect(  this.provider);
   
     const bridgeContractTaiko = new ethers.Contract(
       this.contractAddressTaiko,
       this.bridgeContractABI,
       this.wallet
-    );
+    ).connect(  this.provider);
   
 
     console.log("WE STARTIN")
 
     console.log(bridgeRequest)
-    const signalSenderAddress = await bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
+    const signalSenderAddress = await bridgeContract.bridgeRequestInitiatorUser(bridgeRequest);
     console.log(signalSenderAddress)
     console.log("So far...1")
-    const blockNumber = await bridgeContract.blockNumber(bridgeRequest);
+
 
       
 
@@ -864,45 +880,27 @@ export class ProofAssistantService {
     //console.log(signalToVerify)
 
    
-    console.log(blockNumber.toNumber());
+  
+    
+ 
 
+    const taikoL2Contract = new ethers.Contract(
+      "0x0000777700000000000000000000000000000001",
+      this.taikoBridgeABIHEaders,
+      this.providerTaiko,
+      
+    );
 
-    const blockNumberHexString = decToHex(blockNumber.toNumber());
-    const block = await this.provider.send("eth_getBlockByNumber", [
-      blockNumberHexString,
+    const latestSyncedHeaderHash = await taikoL2Contract.getLatestSyncedHeader();
+
+    
+    const block = await this.provider.send("eth_getBlockByHash", [
+      latestSyncedHeaderHash,
       false,
     ]);
 
-    
-    const proof = await this.provider.send("eth_getProof", [
-      this.contractAddressSepolia,
-      [
-        ethers.utils.keccak256(
-          ethers.utils.solidityPack(
-            ["address", "bytes32"],
-            [
-              signalSenderAddress,
-              signalToVerify,
-            ]
-          )
-        ),
-      ],
-      block.hash,
-    ]);
-
-    console.log("So far...4")
 
 
-    const RLP = ethers.utils.RLP;
-    const encodedProof = ethers.utils.defaultAbiCoder.encode(
-      ["bytes", "bytes"],
-      [
-        RLP.encode(proof.accountProof),
-        RLP.encode(proof.storageProof[0].proof),
-      ]
-    );
-
-  
 
     const blockHeader = {
       parentHash: block.parentHash,
@@ -929,6 +927,44 @@ export class ProofAssistantService {
         : 0,
       withdrawalsRoot: block.withdrawalsRoot,
     };
+
+
+
+
+
+
+    
+    const proof = await this.provider.send("eth_getProof", [
+      this.contractAddressSepolia,
+      [
+        ethers.utils.keccak256(
+          ethers.utils.solidityPack(
+            ["address", "bytes32"],
+            [
+              signalSenderAddress,
+              signalToVerify,
+            ]
+          )
+        ),
+      ],
+      latestSyncedHeaderHash,
+    ]);
+
+    console.log("So far...4")
+    console.log("--------------")
+    console.log(proof)
+
+
+    const RLP = ethers.utils.RLP;
+    const encodedProof = ethers.utils.defaultAbiCoder.encode(
+      ["bytes", "bytes"],
+      [
+        RLP.encode(proof.accountProof),
+        RLP.encode(proof.storageProof[0].proof),
+      ]
+    );
+
+  
 
 
     console.log("---------------encoded account & storage proof---------------");
