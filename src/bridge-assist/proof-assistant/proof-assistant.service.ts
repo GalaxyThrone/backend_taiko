@@ -809,10 +809,6 @@ export class ProofAssistantService {
 
 
  
-
-  private signalTwo = "0x497473206f76657220416e616b696e2c20492068617665207468652048696768";
-  private bytesSignal = ethers.utils.arrayify(this.signalTwo);
-  private signalToClaim = ethers.utils.hexZeroPad(this.bytesSignal, 32);
   private sepoliaChainId = 11155111; // Sepolia Id
   private taikoId = 167002; // Taiko A2
 
@@ -843,15 +839,29 @@ export class ProofAssistantService {
 
       console.log(bridgeRequest)
     const signalSenderAddress = await bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
-
-    console.log("So far...")
+      console.log(signalSenderAddress)
+    console.log("So far...1")
     const blockNumber = await bridgeContract.blockNumber(bridgeRequest);
 
-    console.log("So far...")
+    
+    console.log("So far...2")
     const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
 
-    console.log("so far so good!")
+    console.log("So far...3")
+    
 
+   
+    console.log(blockNumber);
+
+
+    const blockNumberHexString = decToHex(blockNumber.toNumber());
+    const block = await this.provider.send("eth_getBlockByNumber", [
+      blockNumberHexString,
+      false,
+    ]);
+
+    console.log("marker")
+    console.log(block)
     const proof = await this.provider.send("eth_getProof", [
       this.contractAddressSepolia,
       [
@@ -860,13 +870,17 @@ export class ProofAssistantService {
             ["address", "bytes32"],
             [
               signalSenderAddress,
-              ethers.utils.formatBytes32String(signalToVerify),
+              (signalToVerify),
             ]
           )
         ),
       ],
-      blockNumber,
+      blockNumberHexString,
     ]);
+
+    console.log("So far...4")
+
+
     const RLP = ethers.utils.RLP;
     const encodedProof = ethers.utils.defaultAbiCoder.encode(
       ["bytes", "bytes"],
@@ -876,11 +890,7 @@ export class ProofAssistantService {
       ]
     );
 
-    const block = await this.provider.send("eth_getBlockByNumber", [
-      blockNumber,
-      false,
-
-    ]);
+  
 
     const blockHeader = {
       parentHash: block.parentHash,
@@ -908,20 +918,28 @@ export class ProofAssistantService {
       withdrawalsRoot: block.withdrawalsRoot,
     };
 
-    console.log(this.wallet);
+
     console.log("---------------encoded account & storage proof---------------");
     console.log(encodedProof);
 
     let signalProof = ethers.utils.defaultAbiCoder.encode(
       [
-        "tuple(tuple(bytes32 parentHash, bytes32 ommersHash, address beneficiary, bytes32 stateRoot, bytes32 transactionsRoot, bytes32 receiptsRoot, bytes32[8] logsBloom, uint256 difficulty, uint128 height, uint64 gasLimit, uint64 gasUsed, uint64 timestamp, bytes extraData, bytes32 mixHash, uint64 nonce, uint256 baseFeePerGas, bytes32 withdrawalsRoot) header, bytes proof)",
+        `tuple(
+          tuple(
+            bytes32 parentHash,
+            bytes32 ommersHash,
+            address beneficiary,
+            bytes32 stateRoot,
+            bytes32 transactionsRoot, bytes32 receiptsRoot, bytes32[8] logsBloom, uint256 difficulty, uint128 height, uint64 gasLimit, uint64 gasUsed, uint64 timestamp, bytes extraData, bytes32 mixHash, uint64 nonce, uint256 baseFeePerGas, bytes32 withdrawalsRoot) header, bytes proof)`,
       ],
       [{ header: blockHeader, proof: encodedProof }]
     );
 
+    console.log("General Kenobi!")
+
     const tx = await contractSignalService
       .connect(this.providerTaiko)
-      .isSignalReceived(this.sepoliaChainId, signalSenderAddress, ethers.utils.formatBytes32String(signalToVerify), signalProof);
+      .isSignalReceived(this.sepoliaChainId, signalSenderAddress, (signalToVerify), signalProof);
 
     console.log(`Signal sent status: ${tx}`);
 
@@ -956,5 +974,9 @@ export class ProofAssistantService {
   async executeClaimSignal() {
     await this.claimSignal(0);
   }
+}
+
+function decToHex(decimal) {
+  return "0x" + decimal.toString(16);
 }
 
