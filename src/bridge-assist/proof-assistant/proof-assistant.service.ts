@@ -29,8 +29,8 @@ export class ProofAssistantService {
   private contractAddressSepolia = "0x11013a48Ad87a528D23CdA25D2C34D7dbDA6b46b"; // SignalService Sepolia
   private contractAddressTaiko = "0x0000777700000000000000000000000000000007"; // SignalService Taiko
 
-  private contractAddressBridgeSepolia = "0x9bF56347Cf15e37A0b85Dc269b65D2b10399be96";
-  private contractAddressBridgeTaiko = "0x148cff8FD012eefB61128d3fFa23CFA744E63163";
+  private contractAddressBridgeSepolia = "0x6190267B10F21a45514C6e92D7F1d92DB761c081";
+  private contractAddressBridgeTaiko = "0x2455264ff0544618eEBa25a182FE6bdC6f69ECDf";
 
 
   private contractABI = [
@@ -812,6 +812,8 @@ export class ProofAssistantService {
   private sepoliaChainId = 11155111; // Sepolia Id
   private taikoId = 167002; // Taiko A2
 
+  
+
 
 
 
@@ -847,8 +849,9 @@ export class ProofAssistantService {
     console.log("So far...2")
     const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
 
+
     console.log("So far...3")
-    
+    console.log(signalToVerify)
 
    
     console.log(blockNumber);
@@ -951,21 +954,33 @@ export class ProofAssistantService {
   async returnSignalSentBridgeRequest(bridgeRequest: number) {
 
 
-    const contract = new ethers.Contract(
-      this.contractAddressTaiko,
+    const contractSignalService = new ethers.Contract(
+      this.contractAddressSepolia,
       this.contractABI,
       this.wallet
     );
     
     const bridgeContract = new ethers.Contract(
-      this.contractAddressBridgeTaiko,
+      this.contractAddressBridgeSepolia,
       this.bridgeContractABI,
       this.wallet
     );
   
 
-    
+  
+
+      
+    const signalSenderAddress = await bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
+  
+ 
+    const blockNumber = await bridgeContract.blockNumber(bridgeRequest);
+
+ 
     const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
+
+
+    
+    console.log(signalToVerify)
 
     return signalToVerify;
   }
