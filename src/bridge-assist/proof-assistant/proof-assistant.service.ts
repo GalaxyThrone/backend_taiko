@@ -41,11 +41,7 @@ export class ProofAssistantService {
 
 
 
-  private contract = new ethers.Contract(
-    this.contractAddressTaiko,
-    this.contractABI,
-    this.wallet
-  );
+ 
 
   private signalTwo = "0x497473206f76657220416e616b696e2c20492068617665207468652048696768";
   private bytesSignal = ethers.utils.arrayify(this.signalTwo);
@@ -55,20 +51,32 @@ export class ProofAssistantService {
 
 
 
-  private bridgeContract = new ethers.Contract(
-    this.contractAddressBridgeTaiko,
-    this.bridgeContractABI,
-    this.wallet
-  );
 
 
 
 
-
+  //checks if signal was received and also returns proof.
   async claimSignal(bridgeRequest: number) {
-    const signalSenderAddress = await this.bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
-    const blockNumber = await this.bridgeContract.blockNumber(bridgeRequest);
-    const signalToVerify = await this.bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
+
+
+    const contract = new ethers.Contract(
+      this.contractAddressTaiko,
+      this.contractABI,
+      this.wallet
+    );
+    
+    const bridgeContract = new ethers.Contract(
+      this.contractAddressBridgeTaiko,
+      this.bridgeContractABI,
+      this.wallet
+    );
+  
+
+    
+
+    const signalSenderAddress = await bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
+    const blockNumber = await bridgeContract.blockNumber(bridgeRequest);
+    const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
 
     const proof = await this.provider.send("eth_getProof", [
       this.contractAddressSepolia,
@@ -137,12 +145,39 @@ export class ProofAssistantService {
       [{ header: blockHeader, proof: encodedProof }]
     );
 
-    const tx = await this.contract
+    const tx = await contract
       .connect(this.providerTaiko)
       .isSignalReceived(this.sepoliaChainId, signalSenderAddress, ethers.utils.formatBytes32String(signalToVerify), signalProof);
 
     console.log(`Signal sent status: ${tx}`);
+
+    return signalProof;
   }
+
+
+
+  async returnSignalSentBridgeRequest(bridgeRequest: number) {
+
+
+    const contract = new ethers.Contract(
+      this.contractAddressTaiko,
+      this.contractABI,
+      this.wallet
+    );
+    
+    const bridgeContract = new ethers.Contract(
+      this.contractAddressBridgeTaiko,
+      this.bridgeContractABI,
+      this.wallet
+    );
+  
+
+    
+    const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
+
+    return signalToVerify;
+  }
+
 
   async executeClaimSignal() {
     await this.claimSignal(0);
