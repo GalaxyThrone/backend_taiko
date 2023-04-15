@@ -30,8 +30,8 @@ export class ProofAssistantService {
   private contractAddressSepolia = "0x11013a48Ad87a528D23CdA25D2C34D7dbDA6b46b"; // SignalService Sepolia
   private contractAddressTaiko = "0x0000777700000000000000000000000000000007"; // SignalService Taiko
 
-  private contractAddressBridgeSepolia = "0x94EcdBe6491670e8a7f92Aa56408cd9336cBc253";
-  private contractAddressBridgeTaiko = "0x8fBC04d9C0871814b6141ae2d9603a8486337E6B"; //@notice currently not used. Important for bridging back.
+  private contractAddressBridgeSepolia = "0x2474102e3B7702Bc623a7aC45Fee5957CF7496bB";
+  private contractAddressBridgeTaiko = "0xfF3DB8fA0d28E0DF5723bBd641D58cE7513F51b5"; //@notice currently not used. Important for bridging back.
 
 
   private contractABI = [
@@ -986,10 +986,22 @@ export class ProofAssistantService {
       [{ header: blockHeader, proof: encodedProof }]
     );
 
-    //console.log(signalProof);
+    console.log(signalProof);
 
     console.log("General Kenobi!")
 
+    /*
+    console.log("--sepoliaChainId--")
+    console.log(this.sepoliaChainId);
+    console.log("--signalSenderAddress--")
+    console.log(signalSenderAddress);
+    console.log("--signalToVerify--")
+    console.log(signalToVerify);
+    console.log("--signalProof--")
+    console.log(signalProof);
+    console.log("----")
+
+      */
 
      
     const tx = await contractSignalService
