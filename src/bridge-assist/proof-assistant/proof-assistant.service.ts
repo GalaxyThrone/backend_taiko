@@ -30,7 +30,7 @@ export class ProofAssistantService {
   private contractAddressTaiko = "0x0000777700000000000000000000000000000007"; // SignalService Taiko
 
   private contractAddressBridgeSepolia = "0x6190267B10F21a45514C6e92D7F1d92DB761c081";
-  private contractAddressBridgeTaiko = "0x2455264ff0544618eEBa25a182FE6bdC6f69ECDf";
+  private contractAddressBridgeTaiko = "0x056D55aF3eA69898cbA5000A3085d730eCfC0AaB";
 
 
   private contractABI = [
@@ -825,7 +825,7 @@ export class ProofAssistantService {
 
 
     const contractSignalService = new ethers.Contract(
-      this.contractAddressSepolia,
+      this.contractAddressTaiko,
       this.contractABI,
       this.wallet
     );
@@ -836,25 +836,35 @@ export class ProofAssistantService {
       this.wallet
     );
   
+    const bridgeContractTaiko = new ethers.Contract(
+      this.contractAddressTaiko,
+      this.bridgeContractABI,
+      this.wallet
+    );
+  
 
     console.log("WE STARTIN")
 
-      console.log(bridgeRequest)
+    console.log(bridgeRequest)
     const signalSenderAddress = await bridgeContract.bridgeRequestInitiatorSender(bridgeRequest);
-      console.log(signalSenderAddress)
+    console.log(signalSenderAddress)
     console.log("So far...1")
     const blockNumber = await bridgeContract.blockNumber(bridgeRequest);
 
+      
+
+
+  
     
     console.log("So far...2")
     const signalToVerify = await bridgeContract.storageSlotsBridgeRequest(bridgeRequest); // @TODO get from contract;
 
 
     console.log("So far...3")
-    console.log(signalToVerify)
+    //console.log(signalToVerify)
 
    
-    console.log(blockNumber);
+    console.log(blockNumber.toNumber());
 
 
     const blockNumberHexString = decToHex(blockNumber.toNumber());
@@ -863,8 +873,7 @@ export class ProofAssistantService {
       false,
     ]);
 
-    console.log("marker")
-    console.log(block)
+    
     const proof = await this.provider.send("eth_getProof", [
       this.contractAddressSepolia,
       [
@@ -873,12 +882,12 @@ export class ProofAssistantService {
             ["address", "bytes32"],
             [
               signalSenderAddress,
-              (signalToVerify),
+              signalToVerify,
             ]
           )
         ),
       ],
-      blockNumberHexString,
+      block.hash,
     ]);
 
     console.log("So far...4")
@@ -923,30 +932,26 @@ export class ProofAssistantService {
 
 
     console.log("---------------encoded account & storage proof---------------");
-    console.log(encodedProof);
+    //console.log(encodedProof);
 
     let signalProof = ethers.utils.defaultAbiCoder.encode(
       [
-        `tuple(
-          tuple(
-            bytes32 parentHash,
-            bytes32 ommersHash,
-            address beneficiary,
-            bytes32 stateRoot,
-            bytes32 transactionsRoot, bytes32 receiptsRoot, bytes32[8] logsBloom, uint256 difficulty, uint128 height, uint64 gasLimit, uint64 gasUsed, uint64 timestamp, bytes extraData, bytes32 mixHash, uint64 nonce, uint256 baseFeePerGas, bytes32 withdrawalsRoot) header, bytes proof)`,
+        "tuple(tuple(bytes32 parentHash, bytes32 ommersHash, address beneficiary, bytes32 stateRoot, bytes32 transactionsRoot, bytes32 receiptsRoot, bytes32[8] logsBloom, uint256 difficulty, uint128 height, uint64 gasLimit, uint64 gasUsed, uint64 timestamp, bytes extraData, bytes32 mixHash, uint64 nonce, uint256 baseFeePerGas, bytes32 withdrawalsRoot) header, bytes proof)",
       ],
       [{ header: blockHeader, proof: encodedProof }]
     );
+
+    //console.log(signalProof);
 
     console.log("General Kenobi!")
 
     const tx = await contractSignalService
       .connect(this.providerTaiko)
-      .isSignalReceived(this.sepoliaChainId, signalSenderAddress, (signalToVerify), signalProof);
+      .isSignalReceived(this.sepoliaChainId, signalSenderAddress, signalToVerify, signalProof);
 
     console.log(`Signal sent status: ${tx}`);
 
-    return signalProof;
+    //return signalProof;
   }
 
 
@@ -956,6 +961,12 @@ export class ProofAssistantService {
 
     const contractSignalService = new ethers.Contract(
       this.contractAddressSepolia,
+      this.contractABI,
+      this.wallet
+    );
+
+    const contractSignalServiceTaiko = new ethers.Contract(
+      this.contractAddressTaiko,
       this.contractABI,
       this.wallet
     );
