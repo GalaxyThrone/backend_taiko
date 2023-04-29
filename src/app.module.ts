@@ -1,13 +1,20 @@
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { BridgeAssistModule } from './bridge-assist/bridge-assist.module';
+
 import { ConfigModule } from '@nestjs/config';
-import { ProofAssistantService } from './bridge-assist/proof-assistant/proof-assistant.service';
-import { ProofAssistantController } from './bridge-assist/proof-assistant/proof-assistant.controller';
+
+import { BridgeAssistPolygonModule } from './bridge-assist-polygon/bridge-assist-polygon.module';
+import { BridgeAssistTaikoModule } from './bridge-assist-taiko/bridge-assist.module';
+import { ProofAssistantController } from './bridge-assist-taiko/proof-assistant-taiko/proof-assistant.controller';
+import { ProofAssistantService } from './bridge-assist-taiko/proof-assistant-taiko/proof-assistant.service';
 
 @Module({
-  imports: [BridgeAssistModule,ConfigModule.forRoot()],
+  imports: [
+    ConfigModule.forRoot(),
+    BridgeAssistTaikoModule,
+    BridgeAssistPolygonModule,
+  ],
   controllers: [AppController, ProofAssistantController],
   providers: [AppService, ProofAssistantService],
 })

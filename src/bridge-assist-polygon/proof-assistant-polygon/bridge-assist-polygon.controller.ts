@@ -1,7 +1,7 @@
 import { Controller, Get, Param } from '@nestjs/common';
-import { ProofAssistantService } from './proof-assistant.service';
+import { ProofAssistantService } from './bridge-assist-polygon.service';
 
-@Controller('proof-assistant')
+@Controller('proof-assistant-polygon')
 export class ProofAssistantController {
   constructor(private readonly proofAssistantService: ProofAssistantService) {}
 
@@ -11,8 +11,12 @@ export class ProofAssistantController {
   }
 
   @Get('return-signal-sent-bridge-request/:bridgeRequest')
-  async returnSignalSentBridgeRequest(@Param('bridgeRequest') bridgeRequest: number) {
-    return await this.proofAssistantService.returnSignalSentBridgeRequest(bridgeRequest);
+  async returnSignalSentBridgeRequest(
+    @Param('bridgeRequest') bridgeRequest: number,
+  ) {
+    return await this.proofAssistantService.returnSignalSentBridgeRequest(
+      bridgeRequest,
+    );
   }
 
   @Get('execute-claim-signal')
