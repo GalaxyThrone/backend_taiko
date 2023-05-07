@@ -5,9 +5,9 @@ import { ProofAssistantService } from './bridge-assist-polygon.service';
 export class ProofAssistantController {
   constructor(private readonly proofAssistantService: ProofAssistantService) {}
 
-  @Get('claim-signal/:bridgeRequest')
-  async claimSignal(@Param('bridgeRequest') bridgeRequest: number) {
-    return await this.proofAssistantService.claimSignal(bridgeRequest);
+  @Get('getProof/:bridgeRequest')
+  async getProof(@Param('bridgeRequest') bridgeRequest: string) {
+    return await this.proofAssistantService.getProof(bridgeRequest);
   }
 
   @Get('return-signal-sent-bridge-request/:bridgeRequest')
